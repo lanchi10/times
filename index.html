@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח שנה, מזג אוויר וזמנים עולמיים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #f8e2e7, #fce4b5, #c0e9fb);
+            margin: 0;
+            padding: 10px;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .header {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #ff4081;
+            text-shadow: 2px 2px #ffa07a;
+        }
+        .logo {
+            margin-top: 10px;
+            width: 80px;
+        }
+        .top-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .clock-section, .weather-section {
+            flex: 1;
+            margin: 15px;
+        }
+        #calendar-month {
+            font-size: 1.5em;
+            color: #673ab7;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px #ffeb3b;
+        }
+        #calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+        .day {
+            background-color: #ffcccb;
+            border: 1px solid #ffab91;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #37474f;
+        }
+        .today {
+            background-color: #ff4081;
+            color: white;
+            border: 2px solid #e91e63;
+            font-weight: bold;
+        }
+        #clock {
+            font-size: 2.5em;
+            margin: 20px 0;
+            color: #333399;
+        }
+        #current-date, #hebrew-date {
+            font-size: 1.5em;
+            color: #333;
+            margin-top: 10px;
+        }
+        .countdown {
+            font-size: 1.2em;
+            color: #ff7043;
+            margin-top: 10px;
+        }
+        .calendar-weather-wrapper {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        #weather-forecast {
+            background-color: #e1f5fe;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00bcd4;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            margin-left: 10px;
+        }
+        .forecast-day {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff3e0;
+            border-radius: 10px;
+            color: #00796b;
+            font-size: 1.2em;
+        }
+        .weather-icon {
+            font-size: 2em;
+        }
+        #world-times {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .world-time {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f0f0f0;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .world-time img {
+            width: 30px;
+            height: 20px;
+            margin-left: 10px;
+        }
+        #refresh-btn {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        #refresh-btn:hover {
+            background-color: #45a049;
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .calendar-weather-wrapper {
+                flex-direction: column;
+            }
+            #weather-forecast {
+                margin-left: 0;
+            }
+            .world-time {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">לוח שנה, מזג אוויר וזמנים עולמיים</div>
+        <img src="images/logo.jpg" alt="Logo" class="logo">
+        <div id="current-date"></div>
+        <div id="hebrew-date"></div>
+        <div class="top-section">
+            <div class="clock-section">
+                <div id="clock"></div>
+                <div class="countdown" id="countdown-month"></div>
+                <div class="countdown" id="countdown-year"></div>
+            </div>
+        </div>
+        <div id="calendar-month"></div>
+        <div class="calendar-weather-wrapper">
+            <div id="calendar"></div>
+            <div id="weather-forecast"></div>
+        </div>
+        <div id="world-times"></div>
+        <button id="refresh-btn" onclick="refreshPage()">רענן נתונים</button>
+    </div>
+
+    <script>
+        const hebrewDays = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+        const weatherForecast = [
+            { temp: 28, condition: "שמשי", icon: "☀️" },
+            { temp: 27, condition: "מעונן חלקית", icon: "🌤️" },
+            { temp: 29, condition: "שמשי", icon: "☀️" },
+            { temp: 26, condition: "גשום", icon: "🌧️" },
+            { temp: 25, condition: "מעונן", icon: "☁️" },
+            { temp: 27, condition: "שמשי", icon: "☀️" },
+            { temp: 28, condition: "שמשי", icon: "☀️" }
+        ];
+
+        const worldCities = [
+            {name: "ניו יורק", timezone: "America/New_York", flag: "us"},
+            {name: "בנגקוק", timezone: "Asia/Bangkok", flag: "th"},
+            {name: "ברלין", timezone: "Europe/Berlin", flag: "de"},
+            {name: "לונדון", timezone: "Europe/London", flag: "gb"},
+            {name: "טוקיו", timezone: "Asia/Tokyo", flag: "jp"},
+            {name: "סידני", timezone: "Australia/Sydney", flag: "au"},
+            {name: "מוסקבה", timezone: "Europe/Moscow", flag: "ru"},
+            {name: "דובאי", timezone: "Asia/Dubai", flag: "ae"},
+            {name: "פריז", timezone: "Europe/Paris", flag: "fr"},
+            {name: "ריו דה ז'ניירו", timezone: "America/Sao_Paulo", flag: "br"},
+            {name: "מדריד", timezone: "Europe/Madrid", flag: "es"},
+            {name: "רומא", timezone: "Europe/Rome", flag: "it"},
+            {name: "וושינגטון", timezone: "America/New_York", flag: "us"},
+            {name: "הונג קונג", timezone: "Asia/Hong_Kong", flag: "hk"},
+            {name: "בייג'ינג", timezone: "Asia/Shanghai", flag: "cn"},
+            {name: "מקסיקו סיטי", timezone: "America/Mexico_City", flag: "mx"},
+            {name: "טורונטו", timezone: "America/Toronto", flag: "ca"},
+            {name: "קייפטאון", timezone: "Africa/Johannesburg", flag: "za"},
+            {name: "מומבאי", timezone: "Asia/Kolkata", flag: "in"},
+            {name: "סינגפור", timezone: "Asia/Singapore", flag: "sg"}
+        ];
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('he-IL');
+            updateCurrentDate();
+        }
+
+        function updateCurrentDate() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' });
+            const hebrewDate = new Intl.DateTimeFormat('he-IL-u-ca-hebrew', { day: 'numeric', month: 'long', year: 'numeric' }).format(now);
+            document.getElementById('current-date').textContent = `תאריך לועזי: ${formattedDate}`;
+            document.getElementById('hebrew-date').textContent = `תאריך עברי: ${hebrewDate}`;
+            updateCountdowns(now);
+        }
+
+        function updateCountdowns(now) {
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            const endOfYear = new Date(now.getFullYear(), 11, 31);
+
+            const timeToEndOfMonth = endOfMonth - now;
+            const daysMonth = Math.floor(timeToEndOfMonth / (1000 * 60 * 60 * 24));
+            const hoursMonth = Math.floor((timeToEndOfMonth % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutesMonth = Math.floor((timeToEndOfMonth % (1000 * 60 * 60)) / (1000 * 60));
+
+            const timeToEndOfYear = endOfYear - now;
+            const daysYear = Math.floor(timeToEndOfYear / (1000 * 60 * 60 * 24));
+            const hoursYear = Math.floor((timeToEndOfYear % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutesYear = Math.floor((timeToEndOfYear % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById('countdown-month').textContent = `עד סוף החודש: ${daysMonth} ימים, ${hoursMonth} שעות ו-${minutesMonth} דקות`;
+            document.getElementById('countdown-year').textContent = `עד סוף השנה: ${daysYear} ימים, ${hoursYear} שעות ו-${minutesYear} דקות`;
+        }
+
+        function updateWeatherForecast() {
+            const forecastDiv = document.getElementById('weather-forecast');
+            forecastDiv.innerHTML = '<h3>תחזית מזג אוויר לשבוע הקרוב</h3>';
+            const today = new Date();
+
+            weatherForecast.forEach((day, index) => {
+                const forecastDate = new Date(today);
+                forecastDate.setDate(today.getDate() + index);
+                const formattedDate = forecastDate.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit' });
+                const dayName = hebrewDays[forecastDate.getDay()];
+
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('forecast-day');
+                dayDiv.innerHTML = `<span>${dayName} (${formattedDate})</span><span>${day.temp}°C</span><span>${day.condition}</span><span class="weather-icon">${day.icon}</span>`;
+                forecastDiv.appendChild(dayDiv);
+            });
+        }
+
+        function updateWorldTimes() {
+            const worldTimesDiv = document.getElementById('world-times');
+            worldTimesDiv.innerHTML = '';  // Clear previous times
+            worldCities.forEach(city => {
+                const cityTime = new Date().toLocaleTimeString('he-IL', { timeZone: city.timezone, hour: '2-digit', minute: '2-digit' });
+                const cityDiv = document.createElement('div');
+                cityDiv.classList.add('world-time');
+                cityDiv.innerHTML = `<img src="https://flagcdn.com/48x36/${city.flag}.png" alt="${city.name} Flag"><span>${city.name}</span><span>${cityTime}</span>`;
+                worldTimesDiv.appendChild(cityDiv);
+            });
+        }
+
+        function updateGregorianCalendar() {
+            const calendarDiv = document.getElementById('calendar');
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const formattedMonth = now.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+
+            document.getElementById('calendar-month').textContent = `חודש ${formattedMonth}`;
+
+            calendarDiv.innerHTML = '';  // Clear previous calendar
+
+            const dayNames = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+
+            // Add day names
+            dayNames.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('day');
+                dayDiv.textContent = day;
+                calendarDiv.appendChild(dayDiv);
+            });
+
+            // Add empty slots before the first day of the month
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyDiv = document.createElement('div');
+                calendarDiv.appendChild(emptyDiv);
+            }
+
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('day');
+                if (day === now.getDate()) {
+                    dayDiv.classList.add('today');
+                }
+                dayDiv.textContent = day;
+                calendarDiv.appendChild(dayDiv);
+            }
+        }
+
+        function refreshPage() {
+            location.reload();
+        }
+
+        function initializePage() {
+            updateClock();
+            updateWeatherForecast();
+            updateWorldTimes();
+            updateGregorianCalendar();
+            setInterval(updateClock, 1000);
+            setInterval(updateWorldTimes, 60000);
+            setInterval(updateGregorianCalendar, 86400000); // מתעדכן כל יום
+        }
+
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>
